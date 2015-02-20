@@ -1,0 +1,64 @@
+---
+title: "Regression Model Project"
+author: "Michael Simpson"
+date: "February 19, 2015"
+output: pdf_document
+---
+
+## Executive Summary
+Using the data from the mtcars data set, a linear model was used to try and answer two main questions.  First which type of transmission was better for a cars MPG, and second what is the difference in MPG between the two transmission types.  Looking at the plot in appendix A it becomes clear that a manual transmission is better for MPG.  Then through a linear model, we can estimate that there is a 7.25 MPG difference on average between the cars with automatic transmissions and cars with manual transmissions.  Further analysis of the data revealed no meaningful outliers which may have influenced the model.  While the model shows a relationship between the type of transmission and the MPG, it is by no means the only factor affecting MPG.  Through a regression analysis of all the covariates another factor, weight appears to have a significant relationship with MPG as well.     
+
+
+### Questions
+"Is an automatic or manual transmission better for MPG"
+
+"How different is the MPG between automatic manual transmission?"
+
+```{r echo=FALSE }
+data(mtcars)
+data<- mtcars
+```
+
+### Exploratory Analysis
+Looking at a simple Box plot in appendix A, it appears that the transmission type has a significant effect on a cars MPG, and that cars with manual transmissions have higher MPG than those with automatic transmissions.  However further analysis is required to see if other factors are influencing a cars MPG
+```{r eval=FALSE}
+head(mtcars)
+```
+```{r}
+lm1<- lm(mpg ~ ., data=mtcars)
+lm2<- lm(mpg ~ am, data=mtcars)
+summary(lm1)$coefficients
+a<- mtcars$am==0
+m<- mtcars$am==1
+ma<-mean(mtcars$mpg[a])
+mm<-mean(mtcars$mpg[m])
+mm-ma
+```
+lm1 represents a linear models that are trying to explain the influence of all the variables on the mpg variable.  From the coefficient summary it appear that am (transmission type) and wt (vehicles weight) are the two variables with the greatest influence of mpg.  
+
+```{r}
+summary(lm2)$coefficients
+```
+Looking at lm2 which measures the marginal influence of the transmission type on mpg the model estimates a 7.25 increase in mpg for cars with manual transmissions versus cars with automatic transmissions.  
+
+```{r eval=FALSE}
+round(dfbeta(lm2), 2)
+round(hatvalues(lm2), 3)
+```
+Looking at the dfbeta and hatvalue diagnostics, as well as the plots from appendix B, did not reveal any highly influential points from the data set indicating that the model is not being influenced by an outlier.  
+
+# Appendix
+
+## A
+```{r echo=FALSE}
+boxplot(mtcars$mpg ~ mtcars$am, axes=F, ylab= "MPG", main= "MPG by Transmission Type" )
+axis(side= 1, at= c(1,2), labels= c("Automatic", "Manual"))
+axis(2)
+```
+
+## B
+
+```{r echo=FALSE}
+par(mfrow=c(2,2))
+plot(lm1)
+```

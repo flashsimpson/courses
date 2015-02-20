@@ -7,18 +7,18 @@ output: html_document
 
 
 ### Load the data sets
-```{r}
+```{r eval=FALSE}
 library(caret)
 library(ggplot2)
 #download data files
-download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", dest="pml-train.csv", method="curl")
-download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", dest="pml-test.csv", method="curl")
-train<- read.csv("pml-train.csv")
-test<- read.csv("pml-test.csv")
+#download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", #dest="pml-train.csv", method="curl")
+#download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", #dest="pml-test.csv", method="curl")
+#train<- read.csv("pml-train.csv")
+#test<- read.csv("pml-test.csv")
 ```
 
 Perform some peliminary analysis on the train dataset
-```{r}
+```{r eval=FALSE}
 
 nzv<- nearZeroVar(train, saveMetrics=T)
 nzv
@@ -41,10 +41,10 @@ which(M> 0.99, arr.ind=T)
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
 
 
-```{r}
-trainFit<- train(classe ~. , data=myTrain, method="rf", prox=TRUE)
-trainFit2<- train(classe ~ ., data=myTrain, method="rpart", tuneLength = 30)
-trainFit3<- randomForest(classe ~. , data=myTrain)
+```{r eval=FALSE}
+
+#trainFit2<- train(classe ~ ., data=myTrain, method="rpart", tuneLength = 30)
+#trainFit3<- randomForest(classe ~. , data=myTrain)
 
 print(trainFit2$finalModel)
 pred2<- predict(trainFit2, myTest)
@@ -57,5 +57,29 @@ pred3<- predict(trainFit3, myTest)
 confusionMatrix(pred3, myTest$classe)
 summary(pred3)
 table(pred3, myTest$classe)
+
+
+test2<- test[,nzv$nzv==F]
+test3<- test2[, -1]
+test4<- test3[,colSums(is.na(test3)) == 0] 
+test5<- test4[,-58]
+
+pred4<- predict(trainFit3, test5[1,])
+
+join<- rbind(myTest[-58], test4[-58])
+
+table(pred5, myTest$clas)
+summary(pred5)
+
+
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(pred5)
 
 ```
