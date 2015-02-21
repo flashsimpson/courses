@@ -1,0 +1,19 @@
+---
+title: "Shiny App ReadMe"
+author: "Michael Simpson"
+date: "February 21, 2015"
+output: pdf_document
+---
+
+The Ticker App I created is a very simple way to get stock price information for a specific stock on a specific date (2007-Present)
+
+after navigating to the app website (http://mikesimpson.shinyapps.io/CourseProject/)
+simply enter the ticker symbol for a specific company, then either enter a date, or use the dropdown calender selector to find your desired date.  
+
+A few nuances to the app include 
+-you must select a date when the market was open (i.e no weekends or holidays)
+-capitalization does not matter
+-you many not just enter a company name it must be its ticker symbol (i.e. AAPL, YHOO, FDX etc.)
+-the App just show the closing price on the specified date
+
+
