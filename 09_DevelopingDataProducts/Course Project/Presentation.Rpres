@@ -1,0 +1,48 @@
+ 
+The Stock Ticker App
+========================================================
+author: Michael Simpson
+date: 02-21-2015
+font-import: http://fonts.googleapis.com/css?family=Risque
+font-family: 'Risque'
+
+
+Are you Tired of Those Fancy Stock Websites?
+========================================================
+transition: fade
+incremental: true
+
+
+With **graphs** and **charts** and all that other confusing data.  
+
+Dont you want a site with the simple information you seek 
+without all the overwhelming extra info.  
+
+May I Present.... 
+
+The Ticker App
+========================================================
+Taking advantage of a powerful library caled quantmod the Ticker App offeres a way to sift through all the confusing information and give you a simple price on a specific date
+
+Here is a sample of the overwhelming ammount of data normaly presented
+```{r echo=FALSE}
+library(quantmod)
+x<- getSymbols("AAPL", src = "yahoo", auto.assign = FALSE)
+head(x[,1:4],3)
+```
+
+But with the Ticker App, that becomes this....
+========================================================
+
+```{r, echo=FALSE}
+head(last(x[,4]),4)
+```
+A simple easy to understant representation of the closing price on a specific day.  
+
+Follow this link to try out the App for yourself
+===
+ 
+ 
+ 
+http://mikesimpson.shinyapps.io/CourseProject/
+
