@@ -5,19 +5,29 @@ date: "February 9, 2015"
 output: html_document
 ---
 
+### Project Summary
+The Goal of this project is to create a machine learning algorithm that is able to predict activity quality from activity monitors. after performing my analysis and testing multiple models, i found than a random forest model performed the best on my training set.  This high level of accuracy, 99%, continued on my test set I created from the original training using cross validation.  The accuracy when the model was performed on the new test set was over 99% as well giving an out of sample error rate of .0013.  Finnally when performed on the class test set, the model achieved 100% accuracy on all 20 readings.  Below is my code that I worked through to create the model and the data cleaning and analysis I performed.  
 
-### Load the data sets
+
+
+ The inital step for this project was to read in the data, and perform some exploratory analysis.  
+```{r}
+library(caret)
+library(ggplot2)
+```
+
+# Load the data sets
 ```{r eval=FALSE}
 library(caret)
 library(ggplot2)
-#download data files
-#download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", #dest="pml-train.csv", method="curl")
-#download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", #dest="pml-test.csv", method="curl")
-#train<- read.csv("pml-train.csv")
-#test<- read.csv("pml-test.csv")
+download data files
+download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv", #dest="pml-train.csv", method="curl")
+download.file("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv", #dest="pml-test.csv", method="curl")
+train<- read.csv("pml-train.csv")
+test<- read.csv("pml-test.csv")
 ```
 
-Perform some peliminary analysis on the train dataset
+Once the data is read in, I went through and cleaned the data by removing near zero varience predictors, and then subseting the training data into a second testing and traning set.  
 ```{r eval=FALSE}
 
 nzv<- nearZeroVar(train, saveMetrics=T)
@@ -30,21 +40,17 @@ train4<- train3[,colSums(is.na(train3)) == 0]
 inTrain = createDataPartition(y=train4$classe, p=0.8, list=F)
 myTrain = train4[inTrain,]
 myTest = train4[-inTrain,]
-qplot(user_name, color=classe, data=train2, geom="density")
-
-M<- abs(cor(train2[,6:99]))
-diag(M)<-0
-which(M> 0.99, arr.ind=T)
+# qplot(user_name, color=classe, data=train2, geom="density")
 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+Once I had my cleand data and training and test set created, i began training models to fit the data.  I used both the Random Forest and Rpart Tree models and then used those models to try and predict which acticity was being preformed on the test set.  
 
 
 ```{r eval=FALSE}
 
-#trainFit2<- train(classe ~ ., data=myTrain, method="rpart", tuneLength = 30)
-#trainFit3<- randomForest(classe ~. , data=myTrain)
+trainFit2<- train(classe ~ ., data=myTrain, method="rpart", tuneLength = 30)
+trainFit3<- randomForest(classe ~. , data=myTrain)
 
 print(trainFit2$finalModel)
 pred2<- predict(trainFit2, myTest)
@@ -57,7 +63,15 @@ pred3<- predict(trainFit3, myTest)
 confusionMatrix(pred3, myTest$classe)
 summary(pred3)
 table(pred3, myTest$classe)
+```
+Comparing the two models, they both preform very well, but the Random Forest wins at over 99% accuracy. 
+```{r}
+confusionMatrix(pred2, myTest$classe)
+confusionMatrix(pred3, myTest$classe)
 
+```
+Finnaly I run that RF algorithm against the test set given by the class, and then write the predicted outcomes based on the model to text files.  
+```{r eval=FALSE}
 
 test2<- test[,nzv$nzv==F]
 test3<- test2[, -1]
@@ -68,8 +82,8 @@ pred4<- predict(trainFit3, test5[1,])
 
 join<- rbind(myTest[-58], test4[-58])
 
-table(pred5, myTest$clas)
-summary(pred5)
+table(pred4, myTest$classe)
+summary(pred4)
 
 
 pml_write_files = function(x){
@@ -81,5 +95,11 @@ pml_write_files = function(x){
 }
 
 pml_write_files(pred5)
+
+```
+Here is the table of predicted results compared to the test set i created from the training set.  The out of sample error rate is expected to be less than 1/10 of 1%.  
+This is due to the high predictive value of the algorithm in both the in and out of sample results.  
+```{r}
+confusionMatrix(pred4, myTest$classe)
 
 ```

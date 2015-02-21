@@ -58,16 +58,26 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
-<div id="load-the-data-sets" class="section level3">
-<h3>Load the data sets</h3>
+<div id="project-summary" class="section level3">
+<h3>Project Summary</h3>
+<p>The Goal of this project is to create a machine learning algorithm that is able to predict activity quality from activity monitors. after performing my analysis and testing multiple models, i found than a random forest model performed the best on my training set. This high level of accuracy, 99%, continued on my test set I created from the original training using cross validation. The accuracy when the model was performed on the new test set was over 99% as well giving an out of sample error rate of .0013. Finnally when performed on the class test set, the model achieved 100% accuracy on all 20 readings. Below is my code that I worked through to create the model and the data cleaning and analysis I performed.</p>
+<p>The inital step for this project was to read in the data, and perform some exploratory analysis.</p>
+<pre class="r"><code>library(caret)</code></pre>
+<pre><code>## Warning: package 'caret' was built under R version 3.1.2</code></pre>
+<pre><code>## Loading required package: lattice
+## Loading required package: ggplot2</code></pre>
+<pre class="r"><code>library(ggplot2)</code></pre>
+</div>
+<div id="load-the-data-sets" class="section level1">
+<h1>Load the data sets</h1>
 <pre class="r"><code>library(caret)
 library(ggplot2)
-#download data files
-#download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;, #dest=&quot;pml-train.csv&quot;, method=&quot;curl&quot;)
-#download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;, #dest=&quot;pml-test.csv&quot;, method=&quot;curl&quot;)
-#train&lt;- read.csv(&quot;pml-train.csv&quot;)
-#test&lt;- read.csv(&quot;pml-test.csv&quot;)</code></pre>
-<p>Perform some peliminary analysis on the train dataset</p>
+download data files
+download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&quot;, #dest=&quot;pml-train.csv&quot;, method=&quot;curl&quot;)
+download.file(&quot;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&quot;, #dest=&quot;pml-test.csv&quot;, method=&quot;curl&quot;)
+train&lt;- read.csv(&quot;pml-train.csv&quot;)
+test&lt;- read.csv(&quot;pml-test.csv&quot;)</code></pre>
+<p>Once the data is read in, I went through and cleaned the data by removing near zero varience predictors, and then subseting the training data into a second testing and traning set.</p>
 <pre class="r"><code>nzv&lt;- nearZeroVar(train, saveMetrics=T)
 nzv
 
@@ -78,14 +88,10 @@ train4&lt;- train3[,colSums(is.na(train3)) == 0]
 inTrain = createDataPartition(y=train4$classe, p=0.8, list=F)
 myTrain = train4[inTrain,]
 myTest = train4[-inTrain,]
-qplot(user_name, color=classe, data=train2, geom=&quot;density&quot;)
-
-M&lt;- abs(cor(train2[,6:99]))
-diag(M)&lt;-0
-which(M&gt; 0.99, arr.ind=T)</code></pre>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
-<pre class="r"><code>#trainFit2&lt;- train(classe ~ ., data=myTrain, method=&quot;rpart&quot;, tuneLength = 30)
-#trainFit3&lt;- randomForest(classe ~. , data=myTrain)
+# qplot(user_name, color=classe, data=train2, geom=&quot;density&quot;)</code></pre>
+<p>Once I had my cleand data and training and test set created, i began training models to fit the data. I used both the Random Forest and Rpart Tree models and then used those models to try and predict which acticity was being preformed on the test set.</p>
+<pre class="r"><code>trainFit2&lt;- train(classe ~ ., data=myTrain, method=&quot;rpart&quot;, tuneLength = 30)
+trainFit3&lt;- randomForest(classe ~. , data=myTrain)
 
 print(trainFit2$finalModel)
 pred2&lt;- predict(trainFit2, myTest)
@@ -97,10 +103,74 @@ pred2
 pred3&lt;- predict(trainFit3, myTest)
 confusionMatrix(pred3, myTest$classe)
 summary(pred3)
-table(pred3, myTest$classe)
-
-
-test2&lt;- test[,nzv$nzv==F]
+table(pred3, myTest$classe)</code></pre>
+<p>Comparing the two models, they both preform very well, but the Random Forest wins at over 99% accuracy.</p>
+<pre class="r"><code>confusionMatrix(pred2, myTest$classe)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1096    2    0    0    0
+##          B   12  731    1    0    1
+##          C    0   14  661   22    5
+##          D    0    5   17  601   14
+##          E    8    7    5   20  701
+## 
+## Overall Statistics
+##                                        
+##                Accuracy : 0.966        
+##                  95% CI : (0.96, 0.972)
+##     No Information Rate : 0.284        
+##     P-Value [Acc &gt; NIR] : &lt;2e-16       
+##                                        
+##                   Kappa : 0.957        
+##  Mcnemar's Test P-Value : NA           
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             0.982    0.963    0.966    0.935    0.972
+## Specificity             0.999    0.996    0.987    0.989    0.988
+## Pos Pred Value          0.998    0.981    0.942    0.943    0.946
+## Neg Pred Value          0.993    0.991    0.993    0.987    0.994
+## Prevalence              0.284    0.193    0.174    0.164    0.184
+## Detection Rate          0.279    0.186    0.168    0.153    0.179
+## Detection Prevalence    0.280    0.190    0.179    0.162    0.189
+## Balanced Accuracy       0.991    0.979    0.977    0.962    0.980</code></pre>
+<pre class="r"><code>confusionMatrix(pred3, myTest$classe)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1116    2    0    0    0
+##          B    0  757    0    0    0
+##          C    0    0  684    2    0
+##          D    0    0    0  640    0
+##          E    0    0    0    1  721
+## 
+## Overall Statistics
+##                                     
+##                Accuracy : 0.999     
+##                  95% CI : (0.997, 1)
+##     No Information Rate : 0.284     
+##     P-Value [Acc &gt; NIR] : &lt;2e-16    
+##                                     
+##                   Kappa : 0.998     
+##  Mcnemar's Test P-Value : NA        
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             1.000    0.997    1.000    0.995    1.000
+## Specificity             0.999    1.000    0.999    1.000    1.000
+## Pos Pred Value          0.998    1.000    0.997    1.000    0.999
+## Neg Pred Value          1.000    0.999    1.000    0.999    1.000
+## Prevalence              0.284    0.193    0.174    0.164    0.184
+## Detection Rate          0.284    0.193    0.174    0.163    0.184
+## Detection Prevalence    0.285    0.193    0.175    0.163    0.184
+## Balanced Accuracy       1.000    0.999    1.000    0.998    1.000</code></pre>
+<p>Finnaly I run that RF algorithm against the test set given by the class, and then write the predicted outcomes based on the model to text files.</p>
+<pre class="r"><code>test2&lt;- test[,nzv$nzv==F]
 test3&lt;- test2[, -1]
 test4&lt;- test3[,colSums(is.na(test3)) == 0] 
 test5&lt;- test4[,-58]
@@ -109,8 +179,8 @@ pred4&lt;- predict(trainFit3, test5[1,])
 
 join&lt;- rbind(myTest[-58], test4[-58])
 
-table(pred5, myTest$clas)
-summary(pred5)
+table(pred4, myTest$classe)
+summary(pred4)
 
 
 pml_write_files = function(x){
@@ -122,6 +192,39 @@ pml_write_files = function(x){
 }
 
 pml_write_files(pred5)</code></pre>
+<p>Here is the table of predicted results compared to the test set i created from the training set. The out of sample error rate is expected to be less than 1/10 of 1%.<br />This is due to the high predictive value of the algorithm in both the in and out of sample results.</p>
+<pre class="r"><code>confusionMatrix(pred4, myTest$classe)</code></pre>
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 1116    2    0    0    0
+##          B    0  757    0    0    0
+##          C    0    0  684    2    0
+##          D    0    0    0  640    0
+##          E    0    0    0    1  721
+## 
+## Overall Statistics
+##                                     
+##                Accuracy : 0.999     
+##                  95% CI : (0.997, 1)
+##     No Information Rate : 0.284     
+##     P-Value [Acc &gt; NIR] : &lt;2e-16    
+##                                     
+##                   Kappa : 0.998     
+##  Mcnemar's Test P-Value : NA        
+## 
+## Statistics by Class:
+## 
+##                      Class: A Class: B Class: C Class: D Class: E
+## Sensitivity             1.000    0.997    1.000    0.995    1.000
+## Specificity             0.999    1.000    0.999    1.000    1.000
+## Pos Pred Value          0.998    1.000    0.997    1.000    0.999
+## Neg Pred Value          1.000    0.999    1.000    0.999    1.000
+## Prevalence              0.284    0.193    0.174    0.164    0.184
+## Detection Rate          0.284    0.193    0.174    0.163    0.184
+## Detection Prevalence    0.285    0.193    0.175    0.163    0.184
+## Balanced Accuracy       1.000    0.999    1.000    0.998    1.000</code></pre>
 </div>
 
 
